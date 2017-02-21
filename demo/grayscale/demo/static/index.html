@@ -17,6 +17,7 @@
 		console.log("inside");
 		var url = document.getElementById("url").value
 		var bucket = document.getElementById("bucket").value
+		var videocontainer = document.getElementById('videoclip');
 
 		e.preventDefault();
         	jQuery.ajax({
@@ -29,16 +30,12 @@
 				"bucket": bucket
 			}),
 			complete: function(data){
-				console.log(data.responseJSON.mpd);
-				var player = videojs('vid');
-				player.ready(function() {
-					player.src({
-					    src: data.responseJSON.mpd,
-					    type: 'application/dash+xml'
-					});
-					console.log(player);
-					player.play();
-				});
+				var mpdfile = "http://dash.edgesuite.net/envivio/EnvivioDash3/manifest.mpd";
+				videocontainer.pause();
+				console.log(mpdfile);
+			        videocontainer.setAttribute('src', mpdfile);
+			        videocontainer.load();
+				videocontainer.play();
         		}});
 		e.preventDefault();
 	});
@@ -102,8 +99,9 @@
 	<input name="execute" id="execute" type="submit" value="Execute" />
 	<p>
 
-    	<div id="dash_video">
-        	<video id="vid" data-dashjs-player controls autoplay class="video-js vjs-default-skin">
+    	<div>
+        	<video id="videoclip" data-dashjs-player autoplay 
+		       src="http://dash.edgesuite.net/envivio/EnvivioDash3/manifest.mpd" controls>
 		</video>
                 <p><p>
     	</div>
