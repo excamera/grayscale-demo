@@ -6,10 +6,41 @@
         <title>Excamera Grayscale demo!</title>
     </head>
 
-    {% load static %}
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.10.1.js"></script>
     <script type="text/javascript" src="http://cdn.dashjs.org/latest/dash.all.min.js"></script>
-    <script type="text/javascript" src="{% static "main.js" %}"></script>
-    
+    <script>
+	$("#execute").on('click', function(e) {
+		console.log("inside");
+		alert("inside");
+		var url = document.getElementById("url").value
+		var bucket = document.getElementById("bucket").value
+		console.log(url)
+		console.log(bucket)
+
+		e.preventDefault();
+        	jQuery.ajax({
+			type: "POST",
+			async: true,
+			contentType: "application/json; charset=utf-8",
+			url: "call_mu", 
+			data: JSON.stringify({
+				"url": url, 
+				"source": 1,
+				"bucket": bucket
+			}),
+			complete: function(data){
+				console.log(data);
+				console.log(data.mpd);
+				var video = document.getElementById('video');
+		                var source = document.createElement('source');
+                		source.setAttribute('src', data.mpd);
+                		video.appendChild(source);
+                		video.play();
+        		}});
+		e.preventDefault();
+	});
+    </script>
+
     <style>
       video {
 	margin-left: auto;
@@ -55,18 +86,21 @@
 		<b>Video URL</b>
 	</label>
 
-	<input class="w3-input w3-border " type="text" name="url" id="url"></p>
+	<input class="w3-input w3-border " id="url" type="text" name="field1" placeholder="S3 Url *">
 	<p>
 
-	<button class="w3-btn w3-blue" id="analyze" name="analyze">Analyze!</button></p>
+	<label class="w3-text-blue">
+                <b>S3 Bucket</b>
+        </label>
+	<input id="bucket" type="text" name="field3" placeholder="S3 Bucket *">
+	<p>
+
+	<input name="execute" id="execute" type="submit" value="Execute" />
 	<p>
 
     	<div>
-        	<video data-dashjs-player autoplay src=${output_mpd} controls>
+        	<video data-dashjs-player autoplay controls>
 		</video>
-		<p><p>
-		<video data-dashjs-player autoplay src=${output_mpd} controls>
-                </video>
                 <p><p>
     	</div>
     </form>
