@@ -1,0 +1,76 @@
+<!-- howdy/templates/index.html -->
+<!DOCTYPE html>
+<html>
+    <head>
+	<meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
+        <title>Excamera Grayscale demo!</title>
+    </head>
+
+    {% load static %}
+    <script type="text/javascript" src="http://cdn.dashjs.org/latest/dash.all.min.js"></script>
+    <script type="text/javascript" src="{% static "main.js" %}"></script>
+    
+    <style>
+      video {
+	margin-left: auto;
+        margin-right:auto;
+        width: 640px;
+        height: 360px;
+      }
+      input[type=text] {
+        padding: 0;
+	width: 640px;
+        height: 30px;
+        position: relative;
+        left: 0;
+        outline: none;
+        border: 1px solid #cdcdcd;
+        border-color: rgba(0,0,0,.15);
+        background-color: white;
+        font-size: 16px;
+	margin-bottom: 20px;
+	margin-top: 20px;
+	margin-left: auto;
+	margin-right:auto;
+      }
+     .advancedSearchTextbox {
+        width: 526px;
+        margin-right: -4px;
+     }
+     label {
+	cursor: default;
+     }
+    </style>
+
+    <body>
+
+    <form class="container">
+	<h2 class="w3-text-blue">Excamera Grayscale Demo</h2>
+        <p>
+		Enter URL of the video stored in AWS S3. Wait till the grayscaling is complete
+	</p>
+	<p>
+
+	<label class="w3-text-blue">
+		<b>Video URL</b>
+	</label>
+
+	<input class="w3-input w3-border " type="text" name="url" id="url"></p>
+	<p>
+
+	<button class="w3-btn w3-blue" id="analyze" name="analyze">Analyze!</button></p>
+	<p>
+
+    	<div>
+        	<video data-dashjs-player autoplay src=${output_mpd} controls>
+		</video>
+		<p><p>
+		<video data-dashjs-player autoplay src=${output_mpd} controls>
+                </video>
+                <p><p>
+    	</div>
+    </form>
+
+    </body>
+
+</html>
