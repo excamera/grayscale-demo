@@ -6,16 +6,17 @@
         <title>Excamera Grayscale demo!</title>
     </head>
 
+    {% load static %}
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.10.1.js"></script>
     <script type="text/javascript" src="http://cdn.dashjs.org/latest/dash.all.min.js"></script>
-    <script>
+    <script type="text/javascript" src="{% static "videojs-dash.js" %}"></script>
+    <script type="text/javascript" src="{% static "videojs-dash.min.js" %}"></script>
+    <script type="text/javascript">
+    $( document ).ready(function() {
 	$("#execute").on('click', function(e) {
 		console.log("inside");
-		alert("inside");
 		var url = document.getElementById("url").value
 		var bucket = document.getElementById("bucket").value
-		console.log(url)
-		console.log(bucket)
 
 		e.preventDefault();
         	jQuery.ajax({
@@ -25,20 +26,23 @@
 			url: "call_mu", 
 			data: JSON.stringify({
 				"url": url, 
-				"source": 1,
 				"bucket": bucket
 			}),
 			complete: function(data){
-				console.log(data);
-				console.log(data.mpd);
-				var video = document.getElementById('video');
-		                var source = document.createElement('source');
-                		source.setAttribute('src', data.mpd);
-                		video.appendChild(source);
-                		video.play();
+				console.log(data.responseJSON.mpd);
+				var player = videojs('vid');
+				player.ready(function() {
+					player.src({
+					    src: data.responseJSON.mpd,
+					    type: 'application/dash+xml'
+					});
+					console.log(player);
+					player.play();
+				});
         		}});
 		e.preventDefault();
 	});
+    });
     </script>
 
     <style>
@@ -98,8 +102,8 @@
 	<input name="execute" id="execute" type="submit" value="Execute" />
 	<p>
 
-    	<div>
-        	<video data-dashjs-player autoplay controls>
+    	<div id="dash_video">
+        	<video id="vid" data-dashjs-player controls autoplay class="video-js vjs-default-skin">
 		</video>
                 <p><p>
     	</div>
