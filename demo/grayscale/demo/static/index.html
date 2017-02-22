@@ -61,35 +61,28 @@
 	<input class="w3-input w3-border " id="url" type="text" name="field1" placeholder="S3 Url *">
 	<p>
 
-	<label class="w3-text-blue">
-                <b>S3 Bucket</b>
-        </label>
-	<input id="bucket" type="text" name="field3" placeholder="S3 Bucket *">
-	<p>
-
 	<input name="execute" id="execute" type="submit" value="Execute" />
 	<p>
 
     	<div id="video_delivery">
-        	<video id="videoPlayer" controls>
+        	<video id="videoPlayer1" controls>
 		</video>
-		<video id="videoPlayer1" controls>
-		    <source src="static/output_dashinit.mp4" type="video/mp4">
+		<video id="videoPlayer2" controls>
                 </video>
+		<!-- <video id="videoPlayer1" controls>
+		    <source src="static/output_dashinit.mp4" type="video/mp4">
+                </video>  -->
                 <p><p>
     	</div>
 	{% load static %}
     	<script type="text/javascript" src="http://code.jquery.com/jquery-1.10.1.js"></script>
     	<script type="text/javascript" src="http://cdn.dashjs.org/latest/dash.all.min.js"></script>
-    	<script type="text/javascript" src="{% static "videojs-dash.js" %}"></script>
-    	<script type="text/javascript" src="{% static "videojs-dash.min.js" %}"></script>
 	<script type="text/javascript">
     	$( document ).ready(function() {
             $("#execute").on('click', function(e) {
                 console.log("inside");
                 var url = document.getElementById("url").value;
-                var bucket = document.getElementById("bucket").value;
-                var videocontainer = document.getElementById('videoPlayer');
+		console.log(url);
 
                 e.preventDefault();
                 jQuery.ajax({
@@ -98,15 +91,16 @@
                         contentType: "application/json; charset=utf-8",
                         url: "call_mu",
                         data: JSON.stringify({
-                                "url": url,
-                                "bucket": bucket
+                                "url": url
                         }),
                         complete: function(data) {
-                                var mpdfile = data.responseJSON.mpd;
-				var url = "static/output/output_dash.mpd";
-				//var url = "http://dash.edgesuite.net/envivio/EnvivioDash3/manifest.mpd";
-		                var player = dashjs.MediaPlayer().create();
-                		player.initialize(document.querySelector("#videoPlayer"), url, true);
+                                var input_url = data.responseJSON.input_signed_url;
+				console.log(input_url)
+				var output_url = "static/output/output_dash.mpd";
+		                var iplayer = dashjs.MediaPlayer().create();
+                		iplayer.initialize(document.querySelector("#videoPlayer1"), input_url, true);
+				var oplayer = dashjs.MediaPlayer().create();
+                                oplayer.initialize(document.querySelector("#videoPlayer2"), output_url, true);
                                 /*videocontainer.pause();
                                 console.log(mpdfile);
                                 videocontainer.setAttribute('src', "http://dash.edgesuite.net/envivio/EnvivioDash3/manifest.mpd");
