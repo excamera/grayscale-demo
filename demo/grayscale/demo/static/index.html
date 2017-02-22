@@ -11,35 +11,6 @@
     <script type="text/javascript" src="http://cdn.dashjs.org/latest/dash.all.min.js"></script>
     <script type="text/javascript" src="{% static "videojs-dash.js" %}"></script>
     <script type="text/javascript" src="{% static "videojs-dash.min.js" %}"></script>
-    <script type="text/javascript">
-    $( document ).ready(function() {
-	$("#execute").on('click', function(e) {
-		console.log("inside");
-		var url = document.getElementById("url").value
-		var bucket = document.getElementById("bucket").value
-		var videocontainer = document.getElementById('videoclip');
-
-		e.preventDefault();
-        	jQuery.ajax({
-			type: "POST",
-			async: true,
-			contentType: "application/json; charset=utf-8",
-			url: "call_mu", 
-			data: JSON.stringify({
-				"url": url, 
-				"bucket": bucket
-			}),
-			complete: function(data){
-				var mpdfile = "http://dash.edgesuite.net/envivio/EnvivioDash3/manifest.mpd";
-				videocontainer.pause();
-				console.log(mpdfile);
-			        videocontainer.setAttribute('src', mpdfile);
-			        videocontainer.load();
-				videocontainer.play();
-        		}});
-		e.preventDefault();
-	});
-    });
     </script>
 
     <style>
@@ -99,12 +70,54 @@
 	<input name="execute" id="execute" type="submit" value="Execute" />
 	<p>
 
-    	<div>
-        	<video id="videoclip" data-dashjs-player autoplay 
-		       src="http://dash.edgesuite.net/envivio/EnvivioDash3/manifest.mpd" controls>
+    	<div id="video_delivery">
+        	<video id="videoPlayer" controls>
 		</video>
+		<video id="videoPlayer1" controls>
+		    <source src="static/output_dashinit.mp4" type="video/mp4">
+                </video>
                 <p><p>
     	</div>
+	{% load static %}
+    	<script type="text/javascript" src="http://code.jquery.com/jquery-1.10.1.js"></script>
+    	<script type="text/javascript" src="http://cdn.dashjs.org/latest/dash.all.min.js"></script>
+    	<script type="text/javascript" src="{% static "videojs-dash.js" %}"></script>
+    	<script type="text/javascript" src="{% static "videojs-dash.min.js" %}"></script>
+	<script type="text/javascript">
+    	$( document ).ready(function() {
+            $("#execute").on('click', function(e) {
+                console.log("inside");
+                var url = document.getElementById("url").value;
+                var bucket = document.getElementById("bucket").value;
+                var videocontainer = document.getElementById('videoPlayer');
+
+                e.preventDefault();
+                jQuery.ajax({
+                        type: "POST",
+                        async: true,
+                        contentType: "application/json; charset=utf-8",
+                        url: "call_mu",
+                        data: JSON.stringify({
+                                "url": url,
+                                "bucket": bucket
+                        }),
+                        complete: function(data) {
+                                var mpdfile = data.responseJSON.mpd;
+				var url = "static/output/output_dash.mpd";
+				//var url = "http://dash.edgesuite.net/envivio/EnvivioDash3/manifest.mpd";
+		                var player = dashjs.MediaPlayer().create();
+                		player.initialize(document.querySelector("#videoPlayer"), url, true);
+                                /*videocontainer.pause();
+                                console.log(mpdfile);
+                                videocontainer.setAttribute('src', "http://dash.edgesuite.net/envivio/EnvivioDash3/manifest.mpd");
+				videocontainer.setAttribute('type', "application/dash+xml");
+				videocontainer.load();
+				videocontainer.play();*/
+                        }});
+                e.preventDefault();
+            });
+    	});
+        </script>
     </form>
 
     </body>

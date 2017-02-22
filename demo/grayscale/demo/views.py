@@ -30,6 +30,7 @@ def call_mu(request):
 	)
 
 def invoke_mu(url, bucket):
+	script = "/home/kvasukib/lambda/pipeline/external/mu/src/lambdaize/run_pipeline.sh " + bucket
 	mpd = "http://dash.edgesuite.net/envivio/EnvivioDash3/manifest.mpd"
 	print (mpd)
 	return mpd
