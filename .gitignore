@@ -1,4 +1,6 @@
-*.pyc
-*.log
-*.dat
-*/db.sqlite3
+**.pyc
+**.log
+**.dat
+**.m4s
+**.mp4
+**.mpd
