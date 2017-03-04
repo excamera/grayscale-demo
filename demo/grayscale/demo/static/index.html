@@ -50,7 +50,7 @@
     <form class="container">
 	<h2 class="w3-text-blue">Excamera Grayscale Demo</h2>
         <p>
-		Enter URL of the video stored in AWS S3. Wait till the grayscaling is complete
+		Enter URL of the video stored in AWS S3. Wait till the grayscaling is complete.
 	</p>
 	<p>
 
@@ -61,7 +61,7 @@
 	<input class="w3-input w3-border " id="url" type="text" name="field1" placeholder="S3 Url *">
 	<p>
 
-	<input name="execute" id="execute" type="submit" value="Execute" />
+	<input name="execute" id="execute" type="submit" value="Run, Lambda, Run!" />
 	<p>
 
     	<div id="video_delivery">
@@ -71,7 +71,7 @@
                 </video>
 		<!-- <video id="videoPlayer1" controls>
 		    <source src="static/output_dashinit.mp4" type="video/mp4">
-                </video>  -->
+               </video>  -->
                 <p><p>
     	</div>
 	{% load static %}
@@ -82,10 +82,31 @@
             $("#execute").on('click', function(e) {
                 console.log("inside");
                 var url = document.getElementById("url").value;
-		console.log(url);
+                console.log(url);
 
                 e.preventDefault();
                 jQuery.ajax({
+                        type: "POST",
+                        async: true,
+                        contentType: "application/json; charset=utf-8",
+                        url: "call_mu_stub",
+                        data: JSON.stringify({
+                                "url": url
+                        }),
+                        complete: function(data) {
+                                // var unused = data.responseJSON.input_signed_url;
+                                var input_url = "http://dash.edgesuite.net/envivio/EnvivioDash3/manifest.mpd";
+                                console.log(input_url)
+                                // var output_url = "http://yt-dash-mse-test.commondatastorage.googleapis.com/media/car-20120827-manifest.mpd";
+                                var output_url = "static/output/test/20s_dash.mpd"
+                                // var iplayer = dashjs.MediaPlayer().create();
+                                // iplayer.initialize(document.querySelector("#videoPlayer1"), input_url, true);
+                                var oplayer = dashjs.MediaPlayer().create();
+                                oplayer.initialize(document.querySelector("#videoPlayer2"), output_url, true);
+                        }
+                });
+
+		jQuery.ajax({
                         type: "POST",
                         async: true,
                         contentType: "application/json; charset=utf-8",
@@ -94,20 +115,11 @@
                                 "url": url
                         }),
                         complete: function(data) {
-                                var input_url = data.responseJSON.input_signed_url;
-				console.log(input_url)
-				var output_url = "static/output/output_dash.mpd";
-		                var iplayer = dashjs.MediaPlayer().create();
-                		iplayer.initialize(document.querySelector("#videoPlayer1"), input_url, true);
-				var oplayer = dashjs.MediaPlayer().create();
-                                oplayer.initialize(document.querySelector("#videoPlayer2"), output_url, true);
-                                /*videocontainer.pause();
-                                console.log(mpdfile);
-                                videocontainer.setAttribute('src', "http://dash.edgesuite.net/envivio/EnvivioDash3/manifest.mpd");
-				videocontainer.setAttribute('type', "application/dash+xml");
-				videocontainer.load();
-				videocontainer.play();*/
-                        }});
+                                var output_url = "static/output/output_dash.mpd"
+                                var iplayer = dashjs.MediaPlayer().create();
+                                iplayer.initialize(document.querySelector("#videoPlayer1"), output_url, true);
+                        }
+                });
                 e.preventDefault();
             });
     	});
