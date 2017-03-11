@@ -9,8 +9,6 @@
     {% load static %}
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.10.1.js"></script>
     <script type="text/javascript" src="http://cdn.dashjs.org/latest/dash.all.min.js"></script>
-    <script type="text/javascript" src="{% static "videojs-dash.js" %}"></script>
-    <script type="text/javascript" src="{% static "videojs-dash.min.js" %}"></script>
     </script>
 
     <style>
@@ -43,6 +41,13 @@
      label {
 	cursor: default;
      }
+     .scrollabletextbox {
+    	height:400px;
+    	width:400px;
+    	font-family: Verdana, Tahoma, Arial, Helvetica, sans-serif;
+    	font-size: 82%;
+    	overflow:scroll;
+     }
     </style>
 
     <body>
@@ -61,7 +66,8 @@
 	<input class="w3-input w3-border " id="url" type="text" name="field1" placeholder="S3 Url *">
 	<p>
 
-	<input name="execute" id="execute" type="submit" value="Run, Lambda, Run!" />
+	<input name="execute" id="execute" type="submit" value="Pipeline : Run, Lambda, Run!" />
+	<input name="execute_np" id="execute_np" type="submit" value="Run, Lambda, Run!" />
 	<p>
 
     	<div id="video_delivery">
@@ -69,11 +75,11 @@
 		</video>
 		<video id="videoPlayer2" controls>
                 </video>
-		<!-- <video id="videoPlayer1" controls>
-		    <source src="static/output_dashinit.mp4" type="video/mp4">
-               </video>  -->
                 <p><p>
     	</div>
+
+	<textarea class="scrollabletextbox" name="note" value="">The logs of the controller appears here</textarea>
+
 	{% load static %}
     	<script type="text/javascript" src="http://code.jquery.com/jquery-1.10.1.js"></script>
     	<script type="text/javascript" src="http://cdn.dashjs.org/latest/dash.all.min.js"></script>
@@ -98,15 +104,23 @@
                                 var input_url = "http://dash.edgesuite.net/envivio/EnvivioDash3/manifest.mpd";
                                 console.log(input_url)
                                 // var output_url = "http://yt-dash-mse-test.commondatastorage.googleapis.com/media/car-20120827-manifest.mpd";
-                                var output_url = "static/output/test/20s_dash.mpd"
+                                var output_url = "static/output/mp4boxmpd/output_dash.mpd"
                                 // var iplayer = dashjs.MediaPlayer().create();
                                 // iplayer.initialize(document.querySelector("#videoPlayer1"), input_url, true);
                                 var oplayer = dashjs.MediaPlayer().create();
-                                oplayer.initialize(document.querySelector("#videoPlayer2"), output_url, true);
+                                oplayer.initialize(document.querySelector("#videoPlayer1"), output_url, true);
                         }
                 });
 
-		jQuery.ajax({
+                e.preventDefault();
+            });
+	    $("#execute_np").on('click', function(e) {
+                console.log("inside");
+                var url = document.getElementById("url").value;
+                console.log(url);
+
+                e.preventDefault();
+                jQuery.ajax({
                         type: "POST",
                         async: true,
                         contentType: "application/json; charset=utf-8",
@@ -115,17 +129,17 @@
                                 "url": url
                         }),
                         complete: function(data) {
-                                var output_url = "static/output/output_dash.mpd"
-                                var iplayer = dashjs.MediaPlayer().create();
-                                iplayer.initialize(document.querySelector("#videoPlayer1"), output_url, true);
+                                var unused = data.responseJSON.input_signed_url;
+                                var output_url = "static/output/output_dash.mpd";
+                                var oplayer = dashjs.MediaPlayer().create();
+                                oplayer.initialize(document.querySelector("#videoPlayer2"), output_url, true);
                         }
                 });
+
                 e.preventDefault();
             });
     	});
         </script>
     </form>
-
     </body>
-
 </html>
