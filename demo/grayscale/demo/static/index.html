@@ -78,7 +78,7 @@
                 <p><p>
     	</div>
 
-	<textarea class="scrollabletextbox" name="note" value="">The logs of the controller appears here</textarea>
+	<textarea class="scrollabletextbox" name="logfile" value="">The logs of the controller appears here</textarea>
 
 	{% load static %}
     	<script type="text/javascript" src="http://code.jquery.com/jquery-1.10.1.js"></script>
@@ -135,9 +135,18 @@
                                 oplayer.initialize(document.querySelector("#videoPlayer2"), output_url, true);
                         }
                 });
-
                 e.preventDefault();
             });
+	    function getLog() {
+    		$.ajax({
+        		url: 'static/output/logfile.txt',
+        		dataType: 'text',
+        		success: function(text) {
+            			$("#logfile").text(text);
+            			setTimeout(getLog, 2000); // refresh every 30 seconds
+        		}
+    		})
+	    }
     	});
         </script>
     </form>
