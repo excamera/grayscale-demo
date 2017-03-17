@@ -22,7 +22,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'p_6gtixud^+v_ma25&xvf48m(jc8q^$$+=6if)4^@2anc7&5yv'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['169.228.66.132', 'localhost', '127.0.0.1', 'vm132.sysnet.ucsd.edu']
 
