@@ -21,11 +21,13 @@ def index(request):
 
 @csrf_exempt
 def call_mu(request):
-    if request.method == 'POST':
-        print (request.POST)
-        url = request.POST.get("url")
-        print ("URL=%s") % url
-        response_data = invoke_mu(url)
+    if request.method == 'POST' and request.is_ajax():
+	print (request)
+	print (request.POST)
+        url = request.POST['url']
+	print ("URL=%s") % (url)
+	response_data = []
+        #response_data = invoke_mu(url, logfile)
         return HttpResponse(
             json.dumps(response_data),
             content_type="application/json"
@@ -43,7 +45,7 @@ def call_mu_stub(request):
 def invoke_pipeline(url):
     pass
 
-def invoke_mu(url):
+def invoke_mu(url, logfile):
     response_data = {}
     url = "https://s3-us-west-2.amazonaws.com/excamera-ffmpeg-input/input.mp4"
     regex = "^https://s3-(\S+).amazonaws.com/(\S+)/(\S+)$"

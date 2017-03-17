@@ -52,7 +52,7 @@
 
     <body>
 
-    <form class="container">
+    <form class="container" id="my_form" name="my_form" action="call_mu/" method="post">
 	<h2 class="w3-text-blue">Excamera Grayscale Demo</h2>
         <p>
 		Enter URL of the video stored in AWS S3. Wait till the grayscaling is complete.
@@ -63,10 +63,10 @@
 		<b>Video URL</b>
 	</label>
 
-	<input class="w3-input w3-border " id="url" type="text" name="field1" placeholder="S3 Url *">
+	<input class="w3-input w3-border " id="s3_url" type="text" name="s3_url" placeholder="S3 Url *">
 	<p>
 
-	<input name="execute" id="execute" type="submit" value="Pipeline : Run, Lambda, Run!" />
+	<!-- <input name="execute" id="execute" type="submit" value="Pipeline : Run, Lambda, Run!" /> -->
 	<input name="execute_np" id="execute_np" type="submit" value="Run, Lambda, Run!" />
 	<p>
 
@@ -78,72 +78,61 @@
                 <p><p>
     	</div>
 
-	<textarea class="scrollabletextbox" name="logfile" value="">The logs of the controller appears here</textarea>
+	<textarea class="scrollabletextbox" id="logfile" name="logfile" value="">The log of the controller appears here</textarea>
 
 	{% load static %}
     	<script type="text/javascript" src="http://code.jquery.com/jquery-1.10.1.js"></script>
     	<script type="text/javascript" src="http://cdn.dashjs.org/latest/dash.all.min.js"></script>
 	<script type="text/javascript">
     	$( document ).ready(function() {
-            $("#execute").on('click', function(e) {
-                console.log("inside");
-                var url = document.getElementById("url").value;
-                console.log(url);
-
+            $("#execute").click(function(e) {
                 e.preventDefault();
-                jQuery.ajax({
+                var s3_url = document.getElementById("s3_url").value;
+                $.ajax({
                         type: "POST",
-                        async: true,
-                        contentType: "application/json; charset=utf-8",
-                        url: "call_mu_stub",
-                        data: JSON.stringify({
-                                "url": url
-                        }),
-                        complete: function(data) {
-                                // var unused = data.responseJSON.input_signed_url;
+                        url: "call_mu_stub/",
+                        data: {
+                                url: s3_url
+                        },
+                        success: function(data) {
                                 var input_url = "http://dash.edgesuite.net/envivio/EnvivioDash3/manifest.mpd";
                                 console.log(input_url)
-                                // var output_url = "http://yt-dash-mse-test.commondatastorage.googleapis.com/media/car-20120827-manifest.mpd";
-                                var output_url = "static/output/mp4boxmpd/output_dash.mpd"
-                                // var iplayer = dashjs.MediaPlayer().create();
-                                // iplayer.initialize(document.querySelector("#videoPlayer1"), input_url, true);
+                                var output_url = "static/output/complete_run/00000001_dash.mpd"
                                 var oplayer = dashjs.MediaPlayer().create();
                                 oplayer.initialize(document.querySelector("#videoPlayer1"), output_url, true);
                         }
                 });
-
                 e.preventDefault();
+                return false;
             });
-	    $("#execute_np").on('click', function(e) {
-                console.log("inside");
-                var url = document.getElementById("url").value;
-                console.log(url);
 
-                e.preventDefault();
-                jQuery.ajax({
-                        type: "POST",
-                        async: true,
-                        contentType: "application/json; charset=utf-8",
-                        url: "call_mu",
-                        data: JSON.stringify({
-                                "url": url
-                        }),
-                        complete: function(data) {
-                                var unused = data.responseJSON.input_signed_url;
+	    $("#execute_np").click(function(e) {
+		e.preventDefault();
+		var s3_url = document.getElementById("s3_url").value;
+    		$.ajax({	
+			type: "POST",
+			url: "call_mu/",
+			data: {
+				url: s3_url
+			},
+			success: function(data) {
+				var unused = data.responseJSON.input_signed_url;
                                 var output_url = "static/output/output_dash.mpd";
                                 var oplayer = dashjs.MediaPlayer().create();
                                 oplayer.initialize(document.querySelector("#videoPlayer2"), output_url, true);
-                        }
-                });
-                e.preventDefault();
-            });
-	    function getLog() {
+			}
+     		});
+		e.preventDefault();
+    		return false;
+  	    });
+
+	    function getLog(logfile) {
     		$.ajax({
-        		url: 'static/output/logfile.txt',
+        		url: 'static/output/' + logfile,
         		dataType: 'text',
         		success: function(text) {
             			$("#logfile").text(text);
-            			setTimeout(getLog, 2000); // refresh every 30 seconds
+            			setTimeout(getLog, 1000); // refresh every 1 second
         		}
     		})
 	    }
