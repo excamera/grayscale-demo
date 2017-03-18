@@ -22,10 +22,9 @@ def index(request):
 @csrf_exempt
 def call_mu(request):
     if request.method == 'POST' and request.is_ajax():
-	print (request)
-	print (request.POST)
         url = request.POST['url']
-	print ("URL=%s") % (url)
+	logfile = request.POST['log']
+	print ("URL=%s Logfile=%s") % (url, logfile)
 	response_data = []
         #response_data = invoke_mu(url, logfile)
         return HttpResponse(
@@ -42,13 +41,14 @@ def call_mu_stub(request):
         content_type="application/json"
     )
 
+@csrf_exempt
 def invoke_pipeline(url):
     pass
 
+@csrf_exempt
 def invoke_mu(url, logfile):
     response_data = {}
-    url = "https://s3-us-west-2.amazonaws.com/excamera-ffmpeg-input/input.mp4"
-    regex = "^https://s3-(\S+).amazonaws.com/(\S+)/(\S+)$"
+    regex = "^https?://s3.amazonaws.com/(\S+)/(\S+)$"
     m = re.match(regex, url)
     if m:
         region = m.group(1)
@@ -61,7 +61,8 @@ def invoke_mu(url, logfile):
 
         cmds = ["/home/kvasukib/lambda/pipeline/external/mu/src/lambdaize/run_pipeline.sh", 
                 bucket, 
-                key]
+                key
+		]
         try:
             print "Running the job in mu : "
             output = subprocess.check_output(cmds, stderr=subprocess.STDOUT, shell=True)

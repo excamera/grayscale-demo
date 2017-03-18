@@ -3,13 +3,15 @@
 <html>
     <head>
 	<meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
-        <title>Excamera Grayscale demo!</title>
+        <title>Excamera Demo</title>
     </head>
 
     {% load static %}
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.10.1.js"></script>
     <script type="text/javascript" src="http://cdn.dashjs.org/latest/dash.all.min.js"></script>
-    </script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
     <style>
       video {
@@ -18,59 +20,72 @@
         width: 640px;
         height: 360px;
       }
-      input[type=text] {
-        padding: 0;
-	width: 640px;
-        height: 30px;
-        position: relative;
-        left: 0;
-        outline: none;
-        border: 1px solid #cdcdcd;
-        border-color: rgba(0,0,0,.15);
-        background-color: white;
-        font-size: 16px;
-	margin-bottom: 20px;
-	margin-top: 20px;
-	margin-left: auto;
-	margin-right:auto;
-      }
      .advancedSearchTextbox {
         width: 526px;
         margin-right: -4px;
      }
-     label {
-	cursor: default;
-     }
      .scrollabletextbox {
     	height:400px;
-    	width:400px;
+    	width:1200px;
     	font-family: Verdana, Tahoma, Arial, Helvetica, sans-serif;
     	font-size: 82%;
     	overflow:scroll;
+     }
+     .top-buffer { 
+	margin-top:20px;
      }
     </style>
 
     <body>
 
     <form class="container" id="my_form" name="my_form" action="call_mu/" method="post">
-	<h2 class="w3-text-blue">Excamera Grayscale Demo</h2>
-        <p>
-		Enter URL of the video stored in AWS S3. Wait till the grayscaling is complete.
-	</p>
-	<p>
+	<h2> <span class="label label-primary"> Excamera Demo </span> </h2>
+        <h4> 
+		<span> 
+			Enter URL of the video. Wait till the operation is complete.
+		</span>
+	</h4>
 
-	<label class="w3-text-blue">
-		<b>Video URL</b>
-	</label>
+	<div class="form-group">
+  		<label>Video URL:</label>
+  		<input type="text" class="form-control" id="video_url" name="video_url"
+		       placeholder="https://youtube.com/watch?v=rCZ3SN65kIs">
+	</div>
 
-	<input class="w3-input w3-border " id="s3_url" type="text" name="s3_url" placeholder="S3 Url *">
-	<p>
+	<div class="dropdown row top-buffer">
+    		<button class="btn btn-primary dropdown-toggle" 
+			type="button" data-toggle="dropdown" id="operator">Operator
+    		<span class="caret"></span></button>
+    		<ul class="dropdown-menu">
+      			<li><a href="#">GrayScale</a></li>
+    		</ul>
+	</div>
 
-	<input name="execute" id="execute" type="submit" value="Pipeline : Run, Lambda, Run!"/>
-	<input name="execute_np" id="execute_np" type="submit" value="Run, Lambda, Run!"/>
-	<p>
+	<div class="dropdown row top-buffer">
+		<button class="btn btn-primary dropdown-toggle"
+			type="button" data-toggle="dropdown" id="video_name">Sample Video
+                <span class="caret"></span></button>
+                <ul class="dropdown-menu">
+                        <li><a href="#">Sintel</a></li>
+			<li><a href="#">Lord of the Rings</a></li>
+			<li><a href="#">Whiteboard</a></li>
+                </ul>
+        </div>
 
-    	<div id="video_delivery">
+	<div class="container row top-buffer">
+		<input class="btn btn-primary" 
+	       		name="execute"
+	       		id="execute"
+	       		type="submit"
+	       		value="Pipeline : Run, Lambda, Run!"/>
+		<input class="btn btn-primary"
+	       		name="execute_np"
+	       		id="execute_np"
+	       		type="submit"
+	       		value="Run, Lambda, Run!"/>
+	</div>
+
+    	<div id="video_delivery" class="container row top-buffer">
         	<video id="videoPlayer1" controls>
 		</video>
 		<video id="videoPlayer2" controls>
@@ -81,22 +96,20 @@
 	<textarea class="scrollabletextbox" id="logfile" name="logfile" value="">The log of the controller appears here</textarea>
 
 	{% load static %}
-    	<script type="text/javascript" src="http://code.jquery.com/jquery-1.10.1.js"></script>
-    	<script type="text/javascript" src="http://cdn.dashjs.org/latest/dash.all.min.js"></script>
 	<script type="text/javascript">
-    	$( document ).ready(function() {
+    	$(document).ready(function() {
             $("#execute").click(function(e) {
                 e.preventDefault();
-                var s3_url = document.getElementById("s3_url").value;
+                var video_url = document.getElementById("video_url").value;
                 $.ajax({
                         type: "POST",
                         url: "call_mu_stub/",
                         data: {
-                                url: s3_url
+                                url: video_url
                         },
                         success: function(data) {
                                 var input_url = "http://dash.edgesuite.net/envivio/EnvivioDash3/manifest.mpd";
-                                console.log(input_url)
+                                console.log(input_url);
                                 var output_url = "static/output/complete_run/00000001_dash.mpd"
                                 var oplayer = dashjs.MediaPlayer().create();
                                 oplayer.initialize(document.querySelector("#videoPlayer1"), output_url, true);
@@ -107,13 +120,23 @@
             });
 
 	    $("#execute_np").click(function(e) {
+		console.log("Button clicked!");
 		e.preventDefault();
-		var s3_url = document.getElementById("s3_url").value;
+
+		var video_url     = document.getElementById("video_url").value;
+		var timestamp  = Date.now();
+		var logfile    = "static/log/log_" + timestamp;
+		var video_name = document.getElementById("video_name").value;
+		var op         = document.getElementById("operator").value;
+
     		$.ajax({	
 			type: "POST",
 			url: "call_mu/",
 			data: {
-				url: s3_url
+				url: video_url,
+				log: logfile,
+				video: video_name,
+				operator: op
 			},
 			success: function(data) {
 				var unused = data.responseJSON.input_signed_url;
@@ -128,7 +151,7 @@
 
 	    function getLog(logfile) {
     		$.ajax({
-        		url: 'static/output/' + logfile,
+        		url: logfile,
         		dataType: 'text',
         		success: function(text) {
             			$("#logfile").text(text);
