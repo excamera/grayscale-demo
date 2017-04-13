@@ -7,5 +7,5 @@ from . import views
 urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^call_mu/$', views.call_mu, name='call_mu'),
-    url(r'^call_mu_stub$', views.call_mu_stub, name='call_mu_stub'),
+    url(r'^call_mu_stub/$', views.call_mu_stub, name='call_mu_stub'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

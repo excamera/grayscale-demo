@@ -3,12 +3,20 @@ from django.http import HttpResponse
 from django.views.generic import TemplateView
 from django.views.decorators.csrf import csrf_exempt
 
+import xml.etree.ElementTree as ET
 import json
 import logging
 import sign_url
 import subprocess
 import re
 import os
+import uuid
+import sys
+sys.path.append(os.path.dirname(os.path.realpath(__file__))+'/src/pipeline')
+sys.path.append(os.path.dirname(os.path.realpath(__file__))+'/external/mu/src/lambdaize/')
+
+import pipeline
+import pdb
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -25,9 +33,12 @@ def call_mu(request):
         url = request.POST['url']
 	logfile = request.POST['log']
 	print ("URL=%s Logfile=%s") % (url, logfile)
-	response_data = []
-        #response_data = invoke_mu(url, logfile)
-        return HttpResponse(
+
+    mpd_url, err = invoke_pipeline(url)
+    response_data = {}
+    response_data['mpd_url'] = mpd_url
+
+    return HttpResponse(
             json.dumps(response_data),
             content_type="application/json"
         )
@@ -43,7 +54,21 @@ def call_mu_stub(request):
 
 @csrf_exempt
 def invoke_pipeline(url):
-    pass
+    if not url.startswith('s3://'):
+        # for youtube videos:
+        # download video, upload to s3
+        # invoke pipeline
+        # get first mpd, modify
+        prefix = str(uuid.uuid4().get_hex().upper()[0:8])
+        if os.system("/srv/www/excamera/demo/grayscale/demo/youtube-dl -o 'temp/"+prefix+".%(ext)s' " + url) == 0:
+            filename = os.popen('ls '+'temp/'+prefix+'*').read().strip()
+            logger.info('downloaded video: ' + filename)
+            if os.system("aws s3 cp " + filename + ' s3://lixiang-lambda-test/input/') == 0:
+                logger.info(filename + " uploaded to s3")
+        url = 's3://lixiang-lambda-test/input/' + '/'.join(filename.split('/')[1:])
+    # pdb.set_trace()
+    return pipeline.invoke(url, [('grayscale',[])])
+    
 
 @csrf_exempt
 def invoke_mu(url, logfile):
