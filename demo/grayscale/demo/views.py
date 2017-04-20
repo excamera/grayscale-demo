@@ -55,19 +55,29 @@ def call_mu_stub(request):
 @csrf_exempt
 def invoke_pipeline(url):
     if not url.startswith('s3://'):
+        # # for youtube videos:
+        # # download video, upload to s3
+        # # invoke pipeline
+        # # get first mpd, modify
+        # prefix = str(uuid.uuid4().get_hex().upper()[0:8])
+        # if os.system("/srv/www/excamera/demo/grayscale/demo/youtube-dl -o 'temp/"+prefix+".%(ext)s' " + url) == 0:
+        #     filename = os.popen('ls '+'temp/'+prefix+'*').read().strip()
+        #     logger.info('downloaded video: ' + filename)
+        #     if os.system("aws s3 cp " + filename + ' s3://lixiang-lambda-test/input/') == 0:
+        #         logger.info(filename + " uploaded to s3")
+        # url = 's3://lixiang-lambda-test/input/' + '/'.join(filename.split('/')[1:])
+
         # for youtube videos:
-        # download video, upload to s3
-        # invoke pipeline
+        # get video url using youtube-dl
+        # invoke pipeline with the url
         # get first mpd, modify
-        prefix = str(uuid.uuid4().get_hex().upper()[0:8])
-        if os.system("/srv/www/excamera/demo/grayscale/demo/youtube-dl -o 'temp/"+prefix+".%(ext)s' " + url) == 0:
-            filename = os.popen('ls '+'temp/'+prefix+'*').read().strip()
-            logger.info('downloaded video: ' + filename)
-            if os.system("aws s3 cp " + filename + ' s3://lixiang-lambda-test/input/') == 0:
-                logger.info(filename + " uploaded to s3")
-        url = 's3://lixiang-lambda-test/input/' + '/'.join(filename.split('/')[1:])
-    # pdb.set_trace()
-    return pipeline.invoke(url, [('grayscale',[])])
+        url_list = subprocess.check_output('youtube-dl --get-url '+url, stderr=subprocess.STDOUT, shell=True).split('\n')
+        for u in url_list:
+            if u.startswith('http'):
+                video_url = u
+                break
+    print 'invoking pipeline with url: ' + video_url
+    return pipeline.invoke(video_url, [('grayscale',[])])
     
 
 @csrf_exempt

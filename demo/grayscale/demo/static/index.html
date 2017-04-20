@@ -71,11 +71,6 @@
         </div>
 
 	<div class="container row top-buffer">
-		<input class="btn btn-primary" 
-	       		name="execute"
-	       		id="execute"
-	       		type="submit"
-	       		value="Pipeline: Run, Lambda, Run!"/>
 		<input class="btn btn-primary"
 	       		name="execute_np"
 	       		id="execute_np"
@@ -127,7 +122,7 @@
 		var video_name = document.getElementById("video_name").value;
 		var op         = document.getElementById("operator").value;
 
-    		$.ajax({	
+    		$.ajax({
 			type: "POST",
 			url: "call_mu/",
 			data: {
