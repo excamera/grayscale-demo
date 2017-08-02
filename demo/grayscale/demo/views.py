@@ -12,10 +12,12 @@ import re
 import os
 import uuid
 import sys
-sys.path.append(os.path.dirname(os.path.realpath(__file__))+'/src/pipeline')
-sys.path.append(os.path.dirname(os.path.realpath(__file__))+'/external/mu/src/lambdaize/')
+sys.path.append(os.path.dirname(os.path.realpath(__file__))+'/pipeline/src/pipeline')
+sys.path.append(os.path.dirname(os.path.realpath(__file__))+'/pipeline/external/mu/src/lambdaize/')
 
-import pipeline
+from service import pipeline_pb2_grpc, pipeline_pb2
+from config import settings
+import time
 import pdb
 
 # Get an instance of a logger
@@ -54,19 +56,8 @@ def call_mu_stub(request):
 
 @csrf_exempt
 def invoke_pipeline(url):
+    print time.time(), 'FORREST: invoking pipeline:', time.time()
     if not url.startswith('s3://'):
-        # # for youtube videos:
-        # # download video, upload to s3
-        # # invoke pipeline
-        # # get first mpd, modify
-        # prefix = str(uuid.uuid4().get_hex().upper()[0:8])
-        # if os.system("/srv/www/excamera/demo/grayscale/demo/youtube-dl -o 'temp/"+prefix+".%(ext)s' " + url) == 0:
-        #     filename = os.popen('ls '+'temp/'+prefix+'*').read().strip()
-        #     logger.info('downloaded video: ' + filename)
-        #     if os.system("aws s3 cp " + filename + ' s3://lixiang-lambda-test/input/') == 0:
-        #         logger.info(filename + " uploaded to s3")
-        # url = 's3://lixiang-lambda-test/input/' + '/'.join(filename.split('/')[1:])
-
         # for youtube videos:
         # get video url using youtube-dl
         # invoke pipeline with the url
@@ -76,9 +67,17 @@ def invoke_pipeline(url):
             if u.startswith('http'):
                 video_url = u
                 break
-    print 'invoking pipeline with url: ' + video_url
-    return pipeline.invoke(video_url, [('grayscale',[])])
-    
+    print time.time(), 'FORREST: get actually video url'
+
+    pipeline_spec = open("/the/path/to/spec/file", "r").read()
+    channel = grpc.insecure_channel('%s:%d' % (settings['daemon_addr'], settings['daemon_port']))
+    stub = pipeline_pb2_grpc.PipelineStub(channel)
+    response = stub.Submit(pipeline_pb2.PipelineRequest(pipeline_spec=spec, input_urls=video_urls, options=options))
+
+    print time.time(), 'FORREST: finish pipeline, returning to browser'
+
+    return response
+
 
 @csrf_exempt
 def invoke_mu(url, logfile):
