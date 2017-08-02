@@ -1,6 +1,11 @@
+**.idea
+**.swp
 **.pyc
 **.log
 **.dat
 **.m4s
 **.mp4
 **.mpd
+logs/
+demo/grayscale/demo/pipeline
+.sync/
