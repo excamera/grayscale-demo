@@ -72,7 +72,7 @@ def invoke_pipeline(url):
     pipeline_spec = open("/the/path/to/spec/file", "r").read()
     channel = grpc.insecure_channel('%s:%d' % (settings['daemon_addr'], settings['daemon_port']))
     stub = pipeline_pb2_grpc.PipelineStub(channel)
-    response = stub.Submit(pipeline_pb2.PipelineRequest(pipeline_spec=spec, input_urls=video_urls, options=options))
+    response = stub.Submit(pipeline_pb2.PipelineRequest(pipeline_spec=pipeline_spec, input_urls=[video_url], options=None))
 
     print time.time(), 'FORREST: finish pipeline, returning to browser'
 
