@@ -1,4 +1,5 @@
 **.idea
+**.sync
 **.swp
 **.pyc
 **.log
@@ -8,4 +9,3 @@
 **.mpd
 logs/
 demo/grayscale/demo/pipeline
-.sync/
