@@ -18,6 +18,7 @@ sys.path.append(os.path.dirname(os.path.realpath(__file__))+'/pipeline/external/
 from service import pipeline_pb2_grpc, pipeline_pb2
 from config import settings
 import time
+import grpc
 import pdb
 
 # Get an instance of a logger
@@ -68,15 +69,15 @@ def invoke_pipeline(url):
                 video_url = u
                 break
     print time.time(), 'FORREST: get actually video url'
-
-    pipeline_spec = open("/the/path/to/spec/file", "r").read()
+    pipeline_spec = open("path/to/your/pipespec/file", "r").read()
     channel = grpc.insecure_channel('%s:%d' % (settings['daemon_addr'], settings['daemon_port']))
     stub = pipeline_pb2_grpc.PipelineStub(channel)
     response = stub.Submit(pipeline_pb2.PipelineRequest(pipeline_spec=pipeline_spec, input_urls=[video_url], options=None))
 
     print time.time(), 'FORREST: finish pipeline, returning to browser'
 
-    return response
+    pdb.set_trace()
+    return response.mpd_url, None
 
 
 @csrf_exempt
