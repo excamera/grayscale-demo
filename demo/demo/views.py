@@ -39,7 +39,7 @@ def jobs(request):
             mpd_url = invoke_pipeline(video_link, pipespec)
             response_data = {}
             response_data['mpd_url'] = mpd_url
-            pdb.set_trace()
+            # pdb.set_trace()
             return HttpResponse(
                     json.dumps(response_data),
                     content_type="application/json")
