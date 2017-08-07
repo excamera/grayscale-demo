@@ -3,157 +3,260 @@
 <html>
 <head>
 <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
-<title>Excamera Demo</title>
-</head>
+<title>ExCamera Pipeline Demo</title>
 
-{% load static %}
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
 <script type="text/javascript" src="http://code.jquery.com/jquery-1.10.1.js"></script>
 <script type="text/javascript" src="http://cdn.dashjs.org/latest/dash.all.min.js"></script>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
 <style>
-video {
-  margin-left: auto;
-  margin-right:auto;
-  width: 640px;
-  height: 360px;
-}
-.advancedSearchTextbox {
-  width: 526px;
-  margin-right: -4px;
-}
-.scrollabletextbox {
-  height:400px;
-  width:1200px;
-  font-family: Verdana, Tahoma, Arial, Helvetica, sans-serif;
-  font-size: 82%;
-  overflow:scroll;
-}
-.top-buffer {
-  margin-top:20px;
-}
+
+  body {
+      padding-top: 30px;
+        padding-bottom: 30px;
+  }
+
+  .theme-dropdown .dropdown-menu {
+      position: static;
+        display: block;
+          margin-bottom: 20px;
+  }
+
+  .theme-showcase > p > .btn {
+      margin: 5px 0;
+  }
+
+  .theme-showcase .navbar .container {
+      width: auto;
+  }
+
+  video {
+    margin-left: auto;
+    margin-right:auto;
+    width: 100%;
+    /*height: 360px;*/
+  }
+
+  .advancedSearchTextbox {
+    width: 526px;
+    margin-right: -4px;
+  }
+
+  .scrollabletextbox {
+    height:400px;
+    width:1200px;
+    font-family: Verdana, Tahoma, Arial, Helvetica, sans-serif;
+    font-size: 82%;
+    overflow:scroll;
+  }
+
+  .top-buffer {
+    margin-top:20px;
+  }
+
 </style>
+
+</head>
 
 <body>
 
-<form class="container" id="my_form" name="my_form" action="call_mu/" method="post">
-  <h2> <span class="label label-primary"> Excamera Demo </span> </h2>
-  <p>
-      Enter link of the video. Wait till the operation is complete.
-  </p>
+<div class="container">
 
-  <div class="form-group">
-    <label>Video Link:</label>
-    <input type="text" class="form-control" id="video_url" name="video_url"
-    placeholder="enter a YouTube link"
-    value="https://www.youtube.com/watch?v=ac7KhViaVqc">
+  <div class="jumbotron">
+    <h1>ExCamera Pipeline Demo</h1>
+    <p>
+      a "serverless" video processing pipeline
+    </p>
   </div>
 
-  <div class="dropdown row top-buffer">
-    <button class="btn btn-primary dropdown-toggle"
-      type="button" data-toggle="dropdown" id="video_name">Sample Video
-      <span class="caret"></span></button>
-    <ul class="dropdown-menu">
-      <li><a href="#">Sintel</a></li>
-    </ul>
-  </div>
+  <form id="my_form" name="my_form" action="jobs/" method="post">
 
-  <div class="dropdown row top-buffer">
-    <button class="btn btn-primary dropdown-toggle"
-      type="button" data-toggle="dropdown" id="operator">Operator
-      <span class="caret"></span></button>
-    <ul class="dropdown-menu">
-      <li><a href="#">GrayScale</a></li>
-    </ul>
-  </div>
+    <div class="form-group">
+      <label>Enter a video link, or choose from sample videos:</label>
+      <div class="input-group">
+        <input type="text" class="form-control" id="video_link" aria-label="...">
+        <div class="input-group-btn">
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">sample videos <span class="caret"></span></button>
+          <ul class="dropdown-menu dropdown-menu-right">
+            <li><a href="#" id="sintel-trailer-as-input">Sintel Trailer (~1 min)</a></li>
+            <li><a href="#" id="sintel-as-input">Sintel (~14 min)</a></li>
+          </ul>
+        </div><!-- input-group-btn -->
+      </div><!-- input-group -->
+    </div> <!-- form-group -->
+
+    <div class="form-group">
+      <label>Enter a pipeline spec, or choose one from the sample specs:</label>
+      <textarea class="form-control" rows="15" id="pipespec" aria-label="..."></textarea>
+      <div class="input-group-btn">
+        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">sample pipespecs <span class="caret"></span></button>
+        <ul class="dropdown-menu dropdown-menu-left">
+          <li><a href="#" id="grayscale-as-pipespec">GrayScale</a></li>
+          <li><a href="#" id="rekognition-as-pipespec">Rekognition</a></li>
+        </ul>
+      </div><!-- input-group-btn -->
+    </div><!-- form-group -->
 
 
-  <div class="container row top-buffer">
-    <input class="btn btn-primary"
-    name="execute_np"
-    id="execute_np"
-    type="submit"
-    value="Run, Lambda, Run!"/>
-  </div>
+    <div class="container row top-buffer">
+      <button type="button" class="btn btn-primary" name="submit_job" id="submit_job" type="submit"><span class="glyphicon glyphicon-facetime-video"></span> Run, Lambda, Run!</button>
+    </div><!-- row top-buffer -->
 
-  <div id="video_delivery" class="container row top-buffer">
-    <video id="videoPlayer1" controls>
-    </video>
-    <video id="videoPlayer2" controls>
-    </video>
-    <p><p>
-  </div>
+    <div id="video_delivery" class="container row top-buffer">
+      <video id="videoPlayer1" controls>
+      </video>
+    </div>
 
-  <textarea class="scrollabletextbox" id="logfile" name="logfile" value="">The log of the controller appears here</textarea>
 
-  {% load static %}
-  <script type="text/javascript">
-  $(document).ready(function() {
-    $("#execute").click(function(e) {
-      e.preventDefault();
-      var video_url = document.getElementById("video_url").value;
-      $.ajax({
-        type: "POST",
-        url: "call_mu_stub/",
-        data: {
-          url: video_url
-        },
-        success: function(data) {
-        var input_url = "http://dash.edgesuite.net/envivio/EnvivioDash3/manifest.mpd";
-        console.log(input_url);
-        var output_url = "static/output/00000001_dash.mpd"
-        var oplayer = dashjs.MediaPlayer().create();
-        oplayer.initialize(document.querySelector("#videoPlayer1"), output_url, true);
+    <script type="text/javascript">
+    $(document).ready(function() {
+      $("#sintel-trailer-as-input").click(function(e) {
+        document.getElementById("video_link").value = "https://www.youtube.com/watch?v=ac7KhViaVqc";
+        e.preventDefault();
+        return true;
+        });
 
-        }
-      });
-      e.preventDefault();
-      return false;
-      });
+      $("#sintel-as-input").click(function(e) {
+        document.getElementById("video_link").value = "https://www.youtube.com/watch?v=HomAZcKm3Jo";
+        e.preventDefault();
+        return true;
+        });
 
-    $("#execute_np").click(function(e) {
-      console.log("Button clicked!");
-      e.preventDefault();
-
-      var video_url     = document.getElementById("video_url").value;
-      var timestamp  = Date.now();
-      var logfile    = "static/log/log_" + timestamp;
-      var video_name = document.getElementById("video_name").value;
-      var op         = document.getElementById("operator").value;
-
-      $.ajax({
-        type: "POST",
-        url: "call_mu/",
-        data: {
-          url: video_url,
-          log: logfile,
-          video: video_name,
-          operator: op
-        },
-        success: function(data) {
-          var output_url = data.mpd_url;
-          var oplayer = dashjs.MediaPlayer().create();
-          oplayer.initialize(document.querySelector("#videoPlayer2"), output_url, true);
-        }
-      });
-      e.preventDefault();
-      return false;
-    });
-
-    function getLog(logfile) {
-      $.ajax({
-        url: logfile,
-        dataType: 'text',
-        success: function(text) {
-          $("#logfile").text(text);
-          setTimeout(getLog, 1000); // refresh every 1 second
-        }
-      })
+      $("#grayscale-as-pipespec").click(function(e) {
+        document.getElementById("pipespec").value = `{
+  "nodes":[
+    {
+      "name": "decode",
+      "stage": "decode_from_url",
+      "config": {
+      }
+    },
+    {
+      "name": "grayscale",
+      "stage": "grayscale",
+      "config": {
+      }
+    },
+    {
+      "name": "encode",
+      "stage": "encode_to_dash",
+      "config": {
+      }
     }
-  });
-  </script>
-</form>
+  ],
+
+  "streams":
+  [
+    {
+      "src": "input_0:video_url",
+      "dst": "decode:video_url"
+    },
+    {
+      "src": "decode:frames",
+      "dst": "grayscale:frames"
+    },
+    {
+      "src": "grayscale:frames",
+      "dst": "encode:frames"
+    },
+    {
+      "src": "encode:chunks",
+      "dst": "output_0:chunks"
+    }
+  ]
+}
+`;
+        e.preventDefault();
+        return true;
+        });
+
+      $("#rekognition-as-pipespec").click(function(e) {
+        document.getElementById("pipespec").value = `{
+  "nodes":[
+    {
+      "name": "decode",
+      "stage": "decode_from_url",
+      "config": {
+      }
+    },
+    {
+      "name": "rek",
+      "stage": "rek",
+      "config": {
+      }
+    },
+    {
+      "name": "encode",
+      "stage": "encode_to_dash",
+      "config": {
+      }
+    }
+  ],
+
+  "streams":
+  [
+    {
+      "src": "input_0:video_url",
+      "dst": "decode:video_url"
+    },
+    {
+      "src": "decode:frames",
+      "dst": "rek:frames"
+    },
+    {
+      "src": "rek:frames",
+      "dst": "encode:frames"
+    },
+    {
+      "src": "encode:chunks",
+      "dst": "output_0:chunks"
+    }
+  ]
+}
+`;
+        e.preventDefault();
+        return true;
+        });
+
+
+      $("#submit_job").click(function(e) {
+        console.log("click submit_job!");
+        e.preventDefault();
+
+        var video_link = document.getElementById("video_link").value;
+        var pipespec = document.getElementById("pipespec").value;
+        var timestamp = Date.now();
+
+        $.ajax({
+          type: "POST",
+          url: "jobs/",
+          data: {
+            video_link: video_link,
+            pipespec: pipespec
+          },
+
+          success: function(data) {
+            var output_url = data.mpd_url;
+            var oplayer = dashjs.MediaPlayer().create();
+            oplayer.initialize(document.querySelector("#videoPlayer1"), output_url, true);
+          },
+
+          error: function(xhr, status, err){
+            alert("HTTP " + xhr.status + ' ' + err + ': ' + xhr.responseText);
+          },
+
+        });
+        e.preventDefault();
+        return false;
+      });
+
+    });
+    </script>
+  </form><!-- my_form -->
+
+</div><!-- container -->
 </body>
 </html>
