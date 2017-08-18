@@ -19,6 +19,8 @@ from config import settings
 import time
 import grpc
 import pdb
+import ast
+
 
 logger = logging.getLogger(__name__)
 
@@ -30,11 +32,23 @@ def index(request):
 
 @csrf_exempt
 def jobs(request):
-    # pdb.set_trace()
+    #pdb.set_trace()
     if request.method == 'POST' and request.is_ajax():
         try:
+
             video_link = request.POST['video_link']
             pipespec = request.POST['pipespec']
+	    try:
+	    	googleFaceInputRead = str(request.POST['googleFaceInput'])	
+	    except Exception as e:
+            	print "google Face Excpetion is " + str(e)
+		return
+
+	    # update rek pipespec with input 
+	    d = ast.literal_eval(pipespec)
+	    if d['nodes'][1]['config'] != {}:
+		d['nodes'][1]['config']['person'] = googleFaceInputRead
+	    pipespec = str(d).replace("'", '"')
 
             mpd_url = invoke_pipeline(video_link, pipespec)
             response_data = {}
@@ -44,6 +58,7 @@ def jobs(request):
                     json.dumps(response_data),
                     content_type="application/json")
         except Exception as e:
+	    print "Excpetion is " + str(e)
             return HttpResponse(content=str(e), status=500)
     else:
         return HttpResponseNotAllowed(['POST'])
