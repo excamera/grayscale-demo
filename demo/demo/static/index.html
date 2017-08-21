@@ -88,6 +88,15 @@
       </div><!-- input-group -->
     </div> <!-- form-group -->
 
+   <!-- Rek Input Bar -->
+  <div class="form-group">
+    <label> For Rek PipeSpec Only: Enter key terms that will help find the face you would like to identify:</label>
+    <input type="text" class="form-control" id="googleFaceInput" aria-label="..." placeholder="(Actor Name, Movie, etc) ">
+  </div>
+   <!-- End: Rek Input Bar -->
+
+    <div class="row">
+        <div class="col-md-6">
     <div class="form-group">
       <label>Enter a pipeline spec, or choose one from the sample specs:</label>
       <textarea class="form-control" rows="15" id="pipespec" aria-label="..."></textarea>
@@ -99,6 +108,21 @@
         </ul>
       </div><!-- input-group-btn -->
     </div><!-- form-group -->
+        </div>
+        <div class="col-md-6">
+
+   <!-- Liz's image thumbnail -->
+
+   <div class="container">
+     <label>Chosen Source Image for Rekognition Pipeline</label>            
+     <img src="" id="rekSourceImage"
+	 class="img-responsive" alt="Source Image Will Appear Here" width="304" height="236" 
+	 onload="refreshIt(this);">
+   </div>
+
+   <!-- End: Liz's image thumbnail -->
+     </div>
+    </div>
 
 
     <div class="container row top-buffer">
@@ -113,6 +137,14 @@
 
     <script type="text/javascript">
     $(document).ready(function() {
+
+      $("#googleFace-input").click(function(e) {
+        document.getElementById("googleFaceInput").value = "Not Entered";
+        e.preventDefault();
+        return true;
+        });
+
+
       $("#sintel-trailer-as-input").click(function(e) {
         document.getElementById("video_link").value = "https://www.youtube.com/watch?v=ac7KhViaVqc";
         e.preventDefault();
@@ -183,6 +215,12 @@
       }
     },
     {
+      "name": "googleFace",
+      "stage": "googleFace",
+      "config": { "person":"Input Here"
+      }
+    },
+    {
       "name": "rek",
       "stage": "rek",
       "config": {
@@ -204,8 +242,13 @@
     },
     {
       "src": "decode:frames",
+      "dst": "googleFace:frames"
+    },
+    {
+      "src": "googleFace:frames",
       "dst": "rek:frames"
     },
+
     {
       "src": "rek:frames",
       "dst": "encode:frames"
@@ -215,6 +258,7 @@
       "dst": "output_0:chunks"
     }
   ]
+
 }
 `;
         e.preventDefault();
@@ -228,15 +272,34 @@
 
         var video_link = document.getElementById("video_link").value;
         var pipespec = document.getElementById("pipespec").value;
-        var timestamp = Date.now();
+        var googleFaceInput = document.getElementById("googleFaceInput").value;
+
+	//have the image continually refresh
+	var linkInput = (document.getElementById("googleFaceInput").value).split(' ').join('+');        
+        var rekImage = document.getElementById("rekSourceImage");
+        rekImage.src = "https://s3.amazonaws.com/liz-pipeline/" + linkInput + ".jpg"; 
+	      
+        function timedRefresh() {
+	   var img = new Image();
+	   img.src = "https://s3.amazonaws.com/liz-pipeline/"+linkInput+".jpg?_"+(new Date().getTime());
+	   rekImage.src = img.src;
+	   console.log("on click timedRefresh is being called");   
+	}
+	function timed() {
+
+            setTimeout(timedRefresh,15000); //Refresh after 15 seconds
+	} 
+	var timestamp = Date.now();
+        timed();
 
         $.ajax({
           type: "POST",
           url: "jobs/",
           data: {
             video_link: video_link,
-            pipespec: pipespec
-          },
+            pipespec: pipespec,
+	    googleFaceInput:googleFaceInput
+	  },
 
           success: function(data) {
             var output_url = data.mpd_url;
@@ -252,6 +315,8 @@
         e.preventDefault();
         return false;
       });
+
+
 
     });
     </script>
