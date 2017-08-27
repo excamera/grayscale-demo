@@ -44,10 +44,10 @@ def jobs(request):
             	print "google Face Excpetion is " + str(e)
 		return
 
-	    # update rek pipespec with input 
+	    # update rek pipespec with input
 	    d = ast.literal_eval(pipespec)
-	    if d['nodes'][1]['config'] != {}:
-		d['nodes'][1]['config']['person'] = googleFaceInputRead
+	    if d['nodes'][3]['name'] == 'rek':
+	       	d['nodes'][3]['config']['person'] = googleFaceInputRead
 	    pipespec = str(d).replace("'", '"')
 
             mpd_url = invoke_pipeline(video_link, pipespec)
@@ -66,21 +66,25 @@ def jobs(request):
 
 @csrf_exempt
 def invoke_pipeline(url, pipespec):
-    print time.time(), 'FORREST: invoking pipeline:', time.time()
-    if not url.startswith('s3://'):
-        # for youtube videos:
-        # get video url using youtube-dl
-        # invoke pipeline with the url
-        # get first mpd, modify
-        url_list = subprocess.check_output('youtube-dl --get-url '+url, stderr=subprocess.STDOUT, shell=True).split('\n')
-        for u in url_list:
-            if u.startswith('http'):
-                video_url = u
-                break
-    print time.time(), 'FORREST: get actually video url'
+
+
+    inputs = []
+    input = pipeline_pb2.Input()
+    input.type = 'video_link'
+    input.value = str(url)
+    inputs.append(input)
+
+    d = ast.literal_eval(pipespec)
+
+    if d['nodes'][3]['name'] == 'rek':
+        input = pipeline_pb2.Input()
+        input.type = 'person'
+        input.value = d['nodes'][3]['config']['person'] 
+        inputs.append(input)
+
     channel = grpc.insecure_channel('%s:%d' % (settings['daemon_addr'], settings['daemon_port']))
     stub = pipeline_pb2_grpc.PipelineStub(channel)
-    response = stub.Submit(pipeline_pb2.PipelineRequest(pipeline_spec=pipespec, input_urls=[video_url], options=None))
+    response = stub.Submit(pipeline_pb2.SubmitRequest(pipeline_spec=pipespec, inputs=inputs))
 
     if response.success:
         print time.time(), 'FORREST: finish pipeline, returning to browser'
