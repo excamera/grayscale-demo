@@ -159,10 +159,18 @@
 
       $("#grayscale-as-pipespec").click(function(e) {
         document.getElementById("pipespec").value = `{
+{
   "nodes":[
     {
+      "name": "parlink",
+      "stage": "parallelize_link",
+      "config": {
+        "framesperchunk": "{fps} * 2"
+      }
+    },
+    {
       "name": "decode",
-      "stage": "decode_from_url",
+      "stage": "decode_from_chunked_link",
       "config": {
       }
     },
@@ -183,8 +191,12 @@
   "streams":
   [
     {
-      "src": "input_0:video_url",
-      "dst": "decode:video_url"
+      "src": "input_0:video_link",
+      "dst": "parlink:video_link"
+    },
+    {
+      "src": "parlink:chunked_link",
+      "dst": "decode:chunked_link"
     },
     {
       "src": "decode:frames",
@@ -207,23 +219,33 @@
 
       $("#rekognition-as-pipespec").click(function(e) {
         document.getElementById("pipespec").value = `{
-  "nodes":[
+
+"nodes":[
     {
-      "name": "decode",
-      "stage": "decode_from_url",
+      "name": "parlink",
+      "stage": "parallelize_link",
       "config": {
       }
     },
     {
       "name": "googleFace",
       "stage": "googleFace",
-      "config": { "person":"Input Here"
+      "lambda_function": "tempc_aZuk4McU",
+      "config": {
+      }
+    },
+    {
+      "name": "decode",
+      "stage": "decode_from_chunked_link",
+      "config": {
       }
     },
     {
       "name": "rek",
       "stage": "rek",
+      "lambda_function": "tempc_aZuk4McU",
       "config": {
+	"person":"Thor"
       }
     },
     {
@@ -237,18 +259,22 @@
   "streams":
   [
     {
-      "src": "input_0:video_url",
-      "dst": "decode:video_url"
+      "src": "input_0:video_link",
+      "dst": "parlink:video_link"
     },
     {
-      "src": "decode:frames",
-      "dst": "googleFace:frames"
+      "src": "input_1:person",
+      "dst": "googleFace:person"
     },
     {
-      "src": "googleFace:frames",
-      "dst": "rek:frames"
+      "src": "parlink:chunked_link",
+      "dst": "decode:chunked_link"
     },
 
+   {
+      "src": "decode:frames",
+      "dst": "rek:frames"
+    },
     {
       "src": "rek:frames",
       "dst": "encode:frames"
@@ -258,7 +284,6 @@
       "dst": "output_0:chunks"
     }
   ]
-
 }
 `;
         e.preventDefault();
