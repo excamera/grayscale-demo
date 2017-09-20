@@ -19,6 +19,7 @@ from config import settings
 import time
 import grpc
 import pdb
+import traceback
 import ast
 
 
@@ -32,7 +33,6 @@ def index(request):
 
 @csrf_exempt
 def jobs(request):
-    #pdb.set_trace()
     if request.method == 'POST' and request.is_ajax():
         try:
 
@@ -46,19 +46,18 @@ def jobs(request):
 
 	    # update rek pipespec with input
 	    d = ast.literal_eval(pipespec)
-	    if d['nodes'][3]['name'] == 'rek':
+	    if len(d['nodes']) >= 4 and d['nodes'][3]['name'] == 'rek':
 	       	d['nodes'][3]['config']['person'] = googleFaceInputRead
 	    pipespec = str(d).replace("'", '"')
 
             mpd_url = invoke_pipeline(video_link, pipespec)
             response_data = {}
             response_data['mpd_url'] = mpd_url
-            # pdb.set_trace()
             return HttpResponse(
                     json.dumps(response_data),
                     content_type="application/json")
         except Exception as e:
-	    print "Excpetion is " + str(e)
+	    print "Excpetion is", e, traceback.format_exc()
             return HttpResponse(content=str(e), status=500)
     else:
         return HttpResponseNotAllowed(['POST'])
@@ -76,7 +75,7 @@ def invoke_pipeline(url, pipespec):
 
     d = ast.literal_eval(pipespec)
 
-    if d['nodes'][3]['name'] == 'rek':
+    if len(d['nodes']) >= 4 and d['nodes'][3]['name'] == 'rek':
         input = pipeline_pb2.Input()
         input.type = 'person'
         input.value = d['nodes'][3]['config']['person'] 
