@@ -12,7 +12,7 @@ import re
 import os
 import uuid
 import sys
-sys.path.append(os.path.dirname(os.path.realpath(__file__))+'/pipeline/src/pipeline')
+sys.path.append(os.path.dirname(os.path.realpath(__file__))+'/../../external/pipeline/src/pipeline')
 
 from service import pipeline_pb2_grpc, pipeline_pb2
 from config import settings
@@ -65,8 +65,6 @@ def jobs(request):
 
 @csrf_exempt
 def invoke_pipeline(url, pipespec):
-
-
     inputs = []
     input = pipeline_pb2.Input()
     input.type = 'video_link'
