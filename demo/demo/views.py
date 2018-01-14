@@ -65,23 +65,32 @@ def jobs(request):
 
 @csrf_exempt
 def invoke_pipeline(url, pipespec):
-    inputs = []
-    input = pipeline_pb2.Input()
-    input.type = 'video_link'
-    input.value = str(url)
-    inputs.append(input)
+    inputstreams = []
+
+    instream = pipeline_pb2.InputStream()
+    instream.name = 'input_0'
+    instream.type = 'video_link'
+
+    input = instream.inputs.add()
+    input.uri = str(url)
+
+    inputstreams.append(instream)
 
     d = ast.literal_eval(pipespec)
 
     if len(d['nodes']) >= 4 and d['nodes'][3]['name'] == 'rek':
-        input = pipeline_pb2.Input()
-        input.type = 'person'
-        input.value = d['nodes'][3]['config']['person'] 
-        inputs.append(input)
+        instream = pipeline_pb2.InputStream() 
+        instream.name = 'input_1'
+        instream.type = 'person'
+
+        input = instream.inputs.add()
+        input.uri = d['nodes'][3]['config']['person'] 
+
+        inputstreams.append(instream)
 
     channel = grpc.insecure_channel('%s:%d' % (settings['daemon_addr'], settings['daemon_port']))
     stub = pipeline_pb2_grpc.PipelineStub(channel)
-    response = stub.Submit(pipeline_pb2.SubmitRequest(pipeline_spec=pipespec, inputs=inputs))
+    response = stub.Submit(pipeline_pb2.SubmitRequest(pipeline_spec=pipespec, inputstreams=inputstreams))
 
     if response.success:
         print time.time(), 'FORREST: finish pipeline, returning to browser'
